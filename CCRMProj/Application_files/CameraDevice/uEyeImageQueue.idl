@@ -1,0 +1,29 @@
+// uEyeImageQueue.idl : type library source for uEyeImageQueue.exe
+
+// This file will be processed by the MIDL compiler to produce the
+// type library (uEyeImageQueue.tlb).
+
+[ uuid(F840AA9A-29A7-4277-9746-909F9240CB1F), version(1.0) ]
+library uEyeImageQueue
+{
+	importlib("stdole32.tlb");
+	importlib("stdole2.tlb");
+
+	//  Primary dispatch interface for CuEyeImageQueueDoc
+	
+	[ uuid(9D65F344-D56A-46D0-9116-7BC4B3E0646F) ]
+	dispinterface IuEyeImageQueue
+	{
+		properties:
+			
+		methods:
+	};
+
+	//  Class information for CuEyeImageQueueDoc
+	
+	[ uuid(F935774A-DA78-4A3B-8EAF-ABFDF44ED676) ]
+	coclass uEyeImageQueue
+	{
+		[default] dispinterface IuEyeImageQueue;
+	};
+};
