@@ -77,27 +77,7 @@ namespace UFCam {
 	/// <summary>
 	/// 
 	/// </summary>
-	public ref class Work
-	{
-	public:Work()
-	{
-	}
-		  void Print()
-		  {
-			  // obtain reference to currently executing thread
-			  Thread^ current = Thread::CurrentThread;
 
-			  // put thread to sleep for sleepTime amount of time
-			  std::string msg = " starting thread ";
-			  std::wstring stemp = std::wstring(msg.begin(), msg.end());
-			  LPCWSTR sw = stemp.c_str();
-			  OutputDebugString((LPCWSTR)sw);
-
-
-			  Thread::Sleep(5000);
-
-		  } // end method Print
-	};
 
 
 
@@ -196,7 +176,7 @@ namespace UFCam {
 
 	private: System::Windows::Forms::Label^ label13;
 	private: System::Windows::Forms::RichTextBox^ richTextBox1;
-	private: System::Windows::Forms::Button^ IMG_Show;
+
 	private: System::Windows::Forms::TextBox^ ExposureTimeInp;
 	private: System::Windows::Forms::Label^ label14;
 	private: System::Windows::Forms::Button^ ParameterButton;
@@ -228,9 +208,9 @@ private: System::Windows::Forms::Button^ movemotor_3_button;
 
 
 
-private: System::Windows::Forms::Label^ label_numberofframes;
 
-private: System::Windows::Forms::Label^ label_fps;
+
+
 
 
 
@@ -308,8 +288,6 @@ private: System::Windows::Forms::Label^ label_fps;
 			this->CalibBtn = (gcnew System::Windows::Forms::Button());
 			this->SaveBtn = (gcnew System::Windows::Forms::Button());
 			this->groupBox3 = (gcnew System::Windows::Forms::GroupBox());
-			this->label_numberofframes = (gcnew System::Windows::Forms::Label());
-			this->label_fps = (gcnew System::Windows::Forms::Label());
 			this->Number_of_Frames_button = (gcnew System::Windows::Forms::Button());
 			this->MotorMoveFrames = (gcnew System::Windows::Forms::TextBox());
 			this->label13 = (gcnew System::Windows::Forms::Label());
@@ -318,7 +296,6 @@ private: System::Windows::Forms::Label^ label_fps;
 			this->label12 = (gcnew System::Windows::Forms::Label());
 			this->MoveFPS_Btn = (gcnew System::Windows::Forms::Button());
 			this->richTextBox1 = (gcnew System::Windows::Forms::RichTextBox());
-			this->IMG_Show = (gcnew System::Windows::Forms::Button());
 			this->ParameterButton = (gcnew System::Windows::Forms::Button());
 			this->groupBox4 = (gcnew System::Windows::Forms::GroupBox());
 			this->box_Orthogonal_Distance = (gcnew System::Windows::Forms::TextBox());
@@ -857,8 +834,6 @@ private: System::Windows::Forms::Label^ label_fps;
 			// 
 			// groupBox3
 			// 
-			this->groupBox3->Controls->Add(this->label_numberofframes);
-			this->groupBox3->Controls->Add(this->label_fps);
 			this->groupBox3->Controls->Add(this->Number_of_Frames_button);
 			this->groupBox3->Controls->Add(this->MotorMoveFrames);
 			this->groupBox3->Controls->Add(this->label13);
@@ -874,26 +849,6 @@ private: System::Windows::Forms::Label^ label_fps;
 			this->groupBox3->TabIndex = 3;
 			this->groupBox3->TabStop = false;
 			this->groupBox3->Text = L"Simple Setting";
-			// 
-			// label_numberofframes
-			// 
-			this->label_numberofframes->AutoSize = true;
-			this->label_numberofframes->ForeColor = System::Drawing::Color::Silver;
-			this->label_numberofframes->Location = System::Drawing::Point(31, 340);
-			this->label_numberofframes->Name = L"label_numberofframes";
-			this->label_numberofframes->Size = System::Drawing::Size(82, 26);
-			this->label_numberofframes->TabIndex = 14;
-			this->label_numberofframes->Text = L"label22";
-			// 
-			// label_fps
-			// 
-			this->label_fps->AutoSize = true;
-			this->label_fps->ForeColor = System::Drawing::Color::Silver;
-			this->label_fps->Location = System::Drawing::Point(31, 160);
-			this->label_fps->Name = L"label_fps";
-			this->label_fps->Size = System::Drawing::Size(82, 26);
-			this->label_fps->TabIndex = 13;
-			this->label_fps->Text = L"label21";
 			// 
 			// Number_of_Frames_button
 			// 
@@ -984,19 +939,6 @@ private: System::Windows::Forms::Label^ label_fps;
 			this->richTextBox1->Size = System::Drawing::Size(252, 87);
 			this->richTextBox1->TabIndex = 4;
 			this->richTextBox1->Text = L"";
-			// 
-			// IMG_Show
-			// 
-			this->IMG_Show->BackColor = System::Drawing::Color::DarkGreen;
-			this->IMG_Show->Font = (gcnew System::Drawing::Font(L"Arial", 10));
-			this->IMG_Show->ForeColor = System::Drawing::SystemColors::ButtonHighlight;
-			this->IMG_Show->Location = System::Drawing::Point(738, 861);
-			this->IMG_Show->Name = L"IMG_Show";
-			this->IMG_Show->Size = System::Drawing::Size(148, 44);
-			this->IMG_Show->TabIndex = 8;
-			this->IMG_Show->Text = L"IMG_Show";
-			this->IMG_Show->UseVisualStyleBackColor = false;
-			this->IMG_Show->Click += gcnew System::EventHandler(this, &MyForm::IMG_Show_Click);
 			// 
 			// ParameterButton
 			// 
@@ -1200,7 +1142,6 @@ private: System::Windows::Forms::Label^ label_fps;
 			this->Controls->Add(this->label19);
 			this->Controls->Add(this->groupBox4);
 			this->Controls->Add(this->box_RotationSpeed);
-			this->Controls->Add(this->IMG_Show);
 			this->Controls->Add(this->label18);
 			this->Controls->Add(this->richTextBox1);
 			this->Controls->Add(this->box_Arm_Length);
@@ -1612,11 +1553,9 @@ private: System::Windows::Forms::Label^ label_fps;
 	}
 	private: System::Void FPS_button_Click(System::Object^ sender, System::EventArgs^ e) {
 		FPS = Convert::ToDouble(MotorMoveFPS->Text);//FPS
-		this->label_fps->Text = L"" + FPS;
 	}
 	private: System::Void Number_of_Frames_button_Click(System::Object^ sender, System::EventArgs^ e) {
 		Number_of_Frames = Convert::ToDouble(MotorMoveFrames->Text);//Number of Frames
-		this->label_numberofframes->Text = L"" + Number_of_Frames;
 	}
 	private: System::Void IMG_Show_Click(System::Object^ sender, System::EventArgs^ e) {
 		//IplImage *img1 = cvLoadImage("pic1.png");
