@@ -17,6 +17,7 @@
 #include <opencv2/highgui.hpp>
 #include "opencv2/imgproc/imgproc.hpp"
 #include <iostream>
+#include <cctype>
 #include <vector> // for 2D vector 
 namespace UFCam {
 	//Zhongyao part
@@ -44,8 +45,8 @@ namespace UFCam {
 	bool stop_live_view = false;
 	bool frameCleared = false;
 	bool pdStateCHanged = false;
-	double speed = 30;
-	double acc = 100000;
+	double stepspeed = 30;
+	double acceleration = 100000;
 	/// <summary>
 	/// Zhaokang part
 	/// </summary>
@@ -56,12 +57,14 @@ namespace UFCam {
 	double arm_length=0.1;
 	double rotation_speed;
 	double maximum_step_speed = 250000;
+	double exposuretime;
 	//wchar_t motor1[] = L"Phidgets";
 	//double size_motor1 = size(motor1);
 	//wchar_t motor2[] = L"Zaber";
 	//double size_motor2 = size(motor2);
-
-
+	int parameter_speed=0;
+	int parameter_time=0;
+	int parameter_distance=0;
 	// variables for serial com with Arduino
 	char* port = "\\\\.\\COM3";
 	//char output[MAX_DATA_LENGTH];
@@ -97,6 +100,7 @@ namespace UFCam {
 			//
 			//TODO: Add the constructor code here
 			//
+			Setup();
 
 		}
 
@@ -132,7 +136,7 @@ namespace UFCam {
 	private: System::Windows::Forms::TextBox^ movePosInp;
 	private: System::Windows::Forms::Label^ Motor_curr_pos;
 	private: System::Windows::Forms::Label^ label5;
-	private: System::Windows::Forms::Button^ SetMotorAccBtn;
+
 	private: System::Windows::Forms::Button^ SetMotorSpeedBtn;
 	private: System::Windows::Forms::Button^ MoveBtn;
 	private: System::Windows::Forms::Label^ label4;
@@ -154,7 +158,7 @@ namespace UFCam {
 	private: System::Windows::Forms::Label^ label10;
 	private: System::Windows::Forms::Button^ CaptureBtn;
 	private: System::Windows::Forms::Button^ ScanBtn;
-	private: System::Windows::Forms::Label^ label9;
+
 	private: System::Windows::Forms::TextBox^ scanDegreeInp;
 	private: System::Windows::Forms::Button^ CalibBtn;
 	private: System::Windows::Forms::Button^ SaveBtn;
@@ -164,9 +168,9 @@ namespace UFCam {
 
 
 	private: System::Windows::Forms::Label^ label12;
-	private: System::Windows::Forms::Button^ MoveFPS_Btn;
 
-	private: System::Windows::Forms::Button^ FPS_button;
+
+
 	private: System::Windows::Forms::Button^ Number_of_Frames_button;
 	private: System::Windows::Forms::TextBox^ MotorMoveFrames;
 
@@ -179,7 +183,7 @@ namespace UFCam {
 
 	private: System::Windows::Forms::TextBox^ ExposureTimeInp;
 	private: System::Windows::Forms::Label^ label14;
-	private: System::Windows::Forms::Button^ ParameterButton;
+
 	private: System::Windows::Forms::GroupBox^ groupBox4;
 	private: System::Windows::Forms::TextBox^ box_Orthogonal_Distance;
 
@@ -198,10 +202,17 @@ private: System::Windows::Forms::Label^ label17;
 private: System::Windows::Forms::TextBox^ box_MaximumStepSpeed;
 
 private: System::Windows::Forms::Label^ label19;
-private: System::Windows::Forms::Button^ armlength_button;
-private: System::Windows::Forms::Button^ rotationspeed_button;
-private: System::Windows::Forms::Button^ stepspeed_button;
+
+
+
 private: System::Windows::Forms::Button^ movemotor_3_button;
+private: System::Windows::Forms::Button^ calculateall_button;
+private: System::Windows::Forms::Label^ label9;
+private: System::Windows::Forms::Label^ label20;
+private: System::Windows::Forms::Label^ label21;
+private: System::Windows::Forms::Label^ label23;
+private: System::Windows::Forms::Label^ label22;
+private: System::Windows::Forms::Label^ label24;
 
 
 
@@ -254,20 +265,20 @@ private: System::Windows::Forms::Button^ movemotor_3_button;
 			this->Motor_found_label = (gcnew System::Windows::Forms::Label());
 			this->Camera_found_label = (gcnew System::Windows::Forms::Label());
 			this->groupBox1 = (gcnew System::Windows::Forms::GroupBox());
-			this->MotorAccInp = (gcnew System::Windows::Forms::TextBox());
+			this->label23 = (gcnew System::Windows::Forms::Label());
 			this->MotorSpdInp = (gcnew System::Windows::Forms::TextBox());
 			this->movePosInp = (gcnew System::Windows::Forms::TextBox());
 			this->Motor_curr_pos = (gcnew System::Windows::Forms::Label());
-			this->label5 = (gcnew System::Windows::Forms::Label());
 			this->MoveBtn = (gcnew System::Windows::Forms::Button());
-			this->SetMotorAccBtn = (gcnew System::Windows::Forms::Button());
 			this->SetMotorSpeedBtn = (gcnew System::Windows::Forms::Button());
 			this->label4 = (gcnew System::Windows::Forms::Label());
 			this->label3 = (gcnew System::Windows::Forms::Label());
 			this->l = (gcnew System::Windows::Forms::Label());
-			this->groupBox2 = (gcnew System::Windows::Forms::GroupBox());
 			this->ExposureTimeInp = (gcnew System::Windows::Forms::TextBox());
 			this->label14 = (gcnew System::Windows::Forms::Label());
+			this->MotorAccInp = (gcnew System::Windows::Forms::TextBox());
+			this->label5 = (gcnew System::Windows::Forms::Label());
+			this->groupBox2 = (gcnew System::Windows::Forms::GroupBox());
 			this->gainBoost = (gcnew System::Windows::Forms::CheckBox());
 			this->camGammaInp = (gcnew System::Windows::Forms::TextBox());
 			this->Cam_curr_gamma = (gcnew System::Windows::Forms::Label());
@@ -283,35 +294,34 @@ private: System::Windows::Forms::Button^ movemotor_3_button;
 			this->label10 = (gcnew System::Windows::Forms::Label());
 			this->CaptureBtn = (gcnew System::Windows::Forms::Button());
 			this->ScanBtn = (gcnew System::Windows::Forms::Button());
-			this->label9 = (gcnew System::Windows::Forms::Label());
 			this->scanDegreeInp = (gcnew System::Windows::Forms::TextBox());
 			this->CalibBtn = (gcnew System::Windows::Forms::Button());
 			this->SaveBtn = (gcnew System::Windows::Forms::Button());
 			this->groupBox3 = (gcnew System::Windows::Forms::GroupBox());
+			this->label22 = (gcnew System::Windows::Forms::Label());
+			this->box_RotationSpeed = (gcnew System::Windows::Forms::TextBox());
+			this->label18 = (gcnew System::Windows::Forms::Label());
+			this->label19 = (gcnew System::Windows::Forms::Label());
+			this->box_MaximumStepSpeed = (gcnew System::Windows::Forms::TextBox());
+			this->label12 = (gcnew System::Windows::Forms::Label());
+			this->MotorMoveFPS = (gcnew System::Windows::Forms::TextBox());
 			this->Number_of_Frames_button = (gcnew System::Windows::Forms::Button());
 			this->MotorMoveFrames = (gcnew System::Windows::Forms::TextBox());
 			this->label13 = (gcnew System::Windows::Forms::Label());
-			this->FPS_button = (gcnew System::Windows::Forms::Button());
-			this->MotorMoveFPS = (gcnew System::Windows::Forms::TextBox());
-			this->label12 = (gcnew System::Windows::Forms::Label());
-			this->MoveFPS_Btn = (gcnew System::Windows::Forms::Button());
 			this->richTextBox1 = (gcnew System::Windows::Forms::RichTextBox());
-			this->ParameterButton = (gcnew System::Windows::Forms::Button());
 			this->groupBox4 = (gcnew System::Windows::Forms::GroupBox());
+			this->label20 = (gcnew System::Windows::Forms::Label());
 			this->box_Orthogonal_Distance = (gcnew System::Windows::Forms::TextBox());
 			this->label15 = (gcnew System::Windows::Forms::Label());
 			this->box_Pixel_Size = (gcnew System::Windows::Forms::TextBox());
 			this->label16 = (gcnew System::Windows::Forms::Label());
-			this->box_MaximumStepSpeed = (gcnew System::Windows::Forms::TextBox());
-			this->label19 = (gcnew System::Windows::Forms::Label());
-			this->box_RotationSpeed = (gcnew System::Windows::Forms::TextBox());
-			this->label18 = (gcnew System::Windows::Forms::Label());
-			this->box_Arm_Length = (gcnew System::Windows::Forms::TextBox());
 			this->label17 = (gcnew System::Windows::Forms::Label());
-			this->armlength_button = (gcnew System::Windows::Forms::Button());
-			this->rotationspeed_button = (gcnew System::Windows::Forms::Button());
-			this->stepspeed_button = (gcnew System::Windows::Forms::Button());
+			this->box_Arm_Length = (gcnew System::Windows::Forms::TextBox());
 			this->movemotor_3_button = (gcnew System::Windows::Forms::Button());
+			this->calculateall_button = (gcnew System::Windows::Forms::Button());
+			this->label9 = (gcnew System::Windows::Forms::Label());
+			this->label21 = (gcnew System::Windows::Forms::Label());
+			this->label24 = (gcnew System::Windows::Forms::Label());
 			this->groupBox1->SuspendLayout();
 			this->groupBox2->SuspendLayout();
 			this->groupBox3->SuspendLayout();
@@ -388,13 +398,11 @@ private: System::Windows::Forms::Button^ movemotor_3_button;
 			// groupBox1
 			// 
 			this->groupBox1->BackColor = System::Drawing::Color::Transparent;
-			this->groupBox1->Controls->Add(this->MotorAccInp);
+			this->groupBox1->Controls->Add(this->label23);
 			this->groupBox1->Controls->Add(this->MotorSpdInp);
 			this->groupBox1->Controls->Add(this->movePosInp);
 			this->groupBox1->Controls->Add(this->Motor_curr_pos);
-			this->groupBox1->Controls->Add(this->label5);
 			this->groupBox1->Controls->Add(this->MoveBtn);
-			this->groupBox1->Controls->Add(this->SetMotorAccBtn);
 			this->groupBox1->Controls->Add(this->SetMotorSpeedBtn);
 			this->groupBox1->Controls->Add(this->label4);
 			this->groupBox1->Controls->Add(this->label3);
@@ -412,17 +420,20 @@ private: System::Windows::Forms::Button^ movemotor_3_button;
 			this->groupBox1->Text = L"Motor Settings";
 			this->groupBox1->Enter += gcnew System::EventHandler(this, &MyForm::groupBox1_Enter);
 			// 
-			// MotorAccInp
+			// label23
 			// 
-			this->MotorAccInp->Location = System::Drawing::Point(306, 186);
-			this->MotorAccInp->Margin = System::Windows::Forms::Padding(4);
-			this->MotorAccInp->Name = L"MotorAccInp";
-			this->MotorAccInp->Size = System::Drawing::Size(148, 32);
-			this->MotorAccInp->TabIndex = 2;
+			this->label23->AutoSize = true;
+			this->label23->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 8));
+			this->label23->ForeColor = System::Drawing::Color::Ivory;
+			this->label23->Location = System::Drawing::Point(25, 188);
+			this->label23->Name = L"label23";
+			this->label23->Size = System::Drawing::Size(240, 20);
+			this->label23->TabIndex = 19;
+			this->label23->Text = L"Just move the motor, no camera.";
 			// 
 			// MotorSpdInp
 			// 
-			this->MotorSpdInp->Location = System::Drawing::Point(306, 137);
+			this->MotorSpdInp->Location = System::Drawing::Point(307, 146);
 			this->MotorSpdInp->Margin = System::Windows::Forms::Padding(4);
 			this->MotorSpdInp->Name = L"MotorSpdInp";
 			this->MotorSpdInp->Size = System::Drawing::Size(148, 32);
@@ -446,19 +457,6 @@ private: System::Windows::Forms::Button^ movemotor_3_button;
 			this->Motor_curr_pos->TabIndex = 1;
 			this->Motor_curr_pos->Text = L"motor position";
 			// 
-			// label5
-			// 
-			this->label5->AutoSize = true;
-			this->label5->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 10, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
-				static_cast<System::Byte>(0)));
-			this->label5->ForeColor = System::Drawing::Color::White;
-			this->label5->Location = System::Drawing::Point(15, 191);
-			this->label5->Margin = System::Windows::Forms::Padding(4, 0, 4, 0);
-			this->label5->Name = L"label5";
-			this->label5->Size = System::Drawing::Size(206, 25);
-			this->label5->TabIndex = 0;
-			this->label5->Text = L"Set motor acceleration";
-			// 
 			// MoveBtn
 			// 
 			this->MoveBtn->BackColor = System::Drawing::Color::DarkGreen;
@@ -474,28 +472,13 @@ private: System::Windows::Forms::Button^ movemotor_3_button;
 			this->MoveBtn->UseVisualStyleBackColor = false;
 			this->MoveBtn->Click += gcnew System::EventHandler(this, &MyForm::MoveBtn_Click);
 			// 
-			// SetMotorAccBtn
-			// 
-			this->SetMotorAccBtn->BackColor = System::Drawing::Color::DarkGreen;
-			this->SetMotorAccBtn->Font = (gcnew System::Drawing::Font(L"Arial", 10, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
-				static_cast<System::Byte>(0)));
-			this->SetMotorAccBtn->ForeColor = System::Drawing::SystemColors::ButtonHighlight;
-			this->SetMotorAccBtn->Location = System::Drawing::Point(263, 240);
-			this->SetMotorAccBtn->Margin = System::Windows::Forms::Padding(4);
-			this->SetMotorAccBtn->Name = L"SetMotorAccBtn";
-			this->SetMotorAccBtn->Size = System::Drawing::Size(198, 39);
-			this->SetMotorAccBtn->TabIndex = 0;
-			this->SetMotorAccBtn->Text = L"Set acceleration";
-			this->SetMotorAccBtn->UseVisualStyleBackColor = false;
-			this->SetMotorAccBtn->Click += gcnew System::EventHandler(this, &MyForm::SetMotorAccBtn_Click);
-			// 
 			// SetMotorSpeedBtn
 			// 
 			this->SetMotorSpeedBtn->BackColor = System::Drawing::Color::DarkGreen;
 			this->SetMotorSpeedBtn->Font = (gcnew System::Drawing::Font(L"Arial", 10, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
 			this->SetMotorSpeedBtn->ForeColor = System::Drawing::SystemColors::ButtonHighlight;
-			this->SetMotorSpeedBtn->Location = System::Drawing::Point(32, 239);
+			this->SetMotorSpeedBtn->Location = System::Drawing::Point(508, 150);
 			this->SetMotorSpeedBtn->Margin = System::Windows::Forms::Padding(4);
 			this->SetMotorSpeedBtn->Name = L"SetMotorSpeedBtn";
 			this->SetMotorSpeedBtn->Size = System::Drawing::Size(176, 38);
@@ -510,7 +493,7 @@ private: System::Windows::Forms::Button^ movemotor_3_button;
 			this->label4->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 10, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
 			this->label4->ForeColor = System::Drawing::Color::White;
-			this->label4->Location = System::Drawing::Point(15, 140);
+			this->label4->Location = System::Drawing::Point(15, 146);
 			this->label4->Margin = System::Windows::Forms::Padding(4, 0, 4, 0);
 			this->label4->Name = L"label4";
 			this->label4->Size = System::Drawing::Size(155, 25);
@@ -543,14 +526,56 @@ private: System::Windows::Forms::Button^ movemotor_3_button;
 			this->l->TabIndex = 0;
 			this->l->Text = L"Motor curent position";
 			// 
+			// ExposureTimeInp
+			// 
+			this->ExposureTimeInp->Location = System::Drawing::Point(232, 315);
+			this->ExposureTimeInp->Margin = System::Windows::Forms::Padding(4);
+			this->ExposureTimeInp->Name = L"ExposureTimeInp";
+			this->ExposureTimeInp->Size = System::Drawing::Size(148, 32);
+			this->ExposureTimeInp->TabIndex = 5;
+			// 
+			// label14
+			// 
+			this->label14->AutoSize = true;
+			this->label14->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 10, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
+				static_cast<System::Byte>(0)));
+			this->label14->ForeColor = System::Drawing::Color::White;
+			this->label14->Location = System::Drawing::Point(15, 322);
+			this->label14->Margin = System::Windows::Forms::Padding(4, 0, 4, 0);
+			this->label14->Name = L"label14";
+			this->label14->Size = System::Drawing::Size(144, 25);
+			this->label14->TabIndex = 4;
+			this->label14->Text = L"Exposure Time";
+			// 
+			// MotorAccInp
+			// 
+			this->MotorAccInp->Location = System::Drawing::Point(221, 235);
+			this->MotorAccInp->Margin = System::Windows::Forms::Padding(4);
+			this->MotorAccInp->Name = L"MotorAccInp";
+			this->MotorAccInp->Size = System::Drawing::Size(148, 32);
+			this->MotorAccInp->TabIndex = 2;
+			// 
+			// label5
+			// 
+			this->label5->AutoSize = true;
+			this->label5->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 10, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
+				static_cast<System::Byte>(0)));
+			this->label5->ForeColor = System::Drawing::Color::White;
+			this->label5->Location = System::Drawing::Point(-5, 242);
+			this->label5->Margin = System::Windows::Forms::Padding(4, 0, 4, 0);
+			this->label5->Name = L"label5";
+			this->label5->Size = System::Drawing::Size(206, 25);
+			this->label5->TabIndex = 0;
+			this->label5->Text = L"Set motor acceleration";
+			// 
 			// groupBox2
 			// 
 			this->groupBox2->BackColor = System::Drawing::Color::Transparent;
 			this->groupBox2->Controls->Add(this->ExposureTimeInp);
-			this->groupBox2->Controls->Add(this->label14);
 			this->groupBox2->Controls->Add(this->gainBoost);
 			this->groupBox2->Controls->Add(this->camGammaInp);
 			this->groupBox2->Controls->Add(this->Cam_curr_gamma);
+			this->groupBox2->Controls->Add(this->label14);
 			this->groupBox2->Controls->Add(this->Cam_curr_gain);
 			this->groupBox2->Controls->Add(this->camGainInp);
 			this->groupBox2->Controls->Add(this->label7);
@@ -564,7 +589,7 @@ private: System::Windows::Forms::Button^ movemotor_3_button;
 			this->groupBox2->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 11, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
 			this->groupBox2->ForeColor = System::Drawing::Color::GreenYellow;
-			this->groupBox2->Location = System::Drawing::Point(738, 478);
+			this->groupBox2->Location = System::Drawing::Point(742, 87);
 			this->groupBox2->Margin = System::Windows::Forms::Padding(4);
 			this->groupBox2->Name = L"groupBox2";
 			this->groupBox2->Padding = System::Windows::Forms::Padding(4);
@@ -572,27 +597,6 @@ private: System::Windows::Forms::Button^ movemotor_3_button;
 			this->groupBox2->TabIndex = 2;
 			this->groupBox2->TabStop = false;
 			this->groupBox2->Text = L"Camera Settings";
-			// 
-			// ExposureTimeInp
-			// 
-			this->ExposureTimeInp->Location = System::Drawing::Point(231, 277);
-			this->ExposureTimeInp->Margin = System::Windows::Forms::Padding(4);
-			this->ExposureTimeInp->Name = L"ExposureTimeInp";
-			this->ExposureTimeInp->Size = System::Drawing::Size(148, 32);
-			this->ExposureTimeInp->TabIndex = 5;
-			// 
-			// label14
-			// 
-			this->label14->AutoSize = true;
-			this->label14->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 10, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
-				static_cast<System::Byte>(0)));
-			this->label14->ForeColor = System::Drawing::Color::White;
-			this->label14->Location = System::Drawing::Point(15, 276);
-			this->label14->Margin = System::Windows::Forms::Padding(4, 0, 4, 0);
-			this->label14->Name = L"label14";
-			this->label14->Size = System::Drawing::Size(179, 25);
-			this->label14->TabIndex = 4;
-			this->label14->Text = L"Set Exposure Time";
 			// 
 			// gainBoost
 			// 
@@ -771,6 +775,7 @@ private: System::Windows::Forms::Button^ movemotor_3_button;
 			this->ScanBtn->Font = (gcnew System::Drawing::Font(L"Arial", 10, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
 			this->ScanBtn->ForeColor = System::Drawing::SystemColors::ButtonHighlight;
+			this->ScanBtn->ImageAlign = System::Drawing::ContentAlignment::BottomRight;
 			this->ScanBtn->Location = System::Drawing::Point(18, 832);
 			this->ScanBtn->Margin = System::Windows::Forms::Padding(4);
 			this->ScanBtn->Name = L"ScanBtn";
@@ -779,19 +784,6 @@ private: System::Windows::Forms::Button^ movemotor_3_button;
 			this->ScanBtn->Text = L"Scan";
 			this->ScanBtn->UseVisualStyleBackColor = false;
 			this->ScanBtn->Click += gcnew System::EventHandler(this, &MyForm::ScanBtn_Click);
-			// 
-			// label9
-			// 
-			this->label9->AutoSize = true;
-			this->label9->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 10, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
-				static_cast<System::Byte>(0)));
-			this->label9->ForeColor = System::Drawing::Color::OliveDrab;
-			this->label9->Location = System::Drawing::Point(222, 839);
-			this->label9->Margin = System::Windows::Forms::Padding(4, 0, 4, 0);
-			this->label9->Name = L"label9";
-			this->label9->Size = System::Drawing::Size(124, 25);
-			this->label9->TabIndex = 1;
-			this->label9->Text = L"Scan degree";
 			// 
 			// scanDegreeInp
 			// 
@@ -834,28 +826,102 @@ private: System::Windows::Forms::Button^ movemotor_3_button;
 			// 
 			// groupBox3
 			// 
-			this->groupBox3->Controls->Add(this->Number_of_Frames_button);
-			this->groupBox3->Controls->Add(this->MotorMoveFrames);
-			this->groupBox3->Controls->Add(this->label13);
-			this->groupBox3->Controls->Add(this->FPS_button);
-			this->groupBox3->Controls->Add(this->MotorMoveFPS);
+			this->groupBox3->Controls->Add(this->label22);
+			this->groupBox3->Controls->Add(this->box_RotationSpeed);
+			this->groupBox3->Controls->Add(this->label18);
+			this->groupBox3->Controls->Add(this->label19);
+			this->groupBox3->Controls->Add(this->box_MaximumStepSpeed);
 			this->groupBox3->Controls->Add(this->label12);
-			this->groupBox3->Controls->Add(this->MoveFPS_Btn);
+			this->groupBox3->Controls->Add(this->MotorMoveFPS);
 			this->groupBox3->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 11));
 			this->groupBox3->ForeColor = System::Drawing::Color::GreenYellow;
 			this->groupBox3->Location = System::Drawing::Point(1399, 137);
 			this->groupBox3->Name = L"groupBox3";
-			this->groupBox3->Size = System::Drawing::Size(384, 519);
+			this->groupBox3->Size = System::Drawing::Size(384, 395);
 			this->groupBox3->TabIndex = 3;
 			this->groupBox3->TabStop = false;
-			this->groupBox3->Text = L"Simple Setting";
+			this->groupBox3->Text = L"Speed Setting";
+			// 
+			// label22
+			// 
+			this->label22->AutoSize = true;
+			this->label22->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 8));
+			this->label22->ForeColor = System::Drawing::Color::Ivory;
+			this->label22->Location = System::Drawing::Point(17, 35);
+			this->label22->Name = L"label22";
+			this->label22->Size = System::Drawing::Size(253, 20);
+			this->label22->TabIndex = 16;
+			this->label22->Text = L"Only need one among those three.";
+			// 
+			// box_RotationSpeed
+			// 
+			this->box_RotationSpeed->Location = System::Drawing::Point(218, 128);
+			this->box_RotationSpeed->Margin = System::Windows::Forms::Padding(4);
+			this->box_RotationSpeed->Name = L"box_RotationSpeed";
+			this->box_RotationSpeed->Size = System::Drawing::Size(148, 32);
+			this->box_RotationSpeed->TabIndex = 14;
+			// 
+			// label18
+			// 
+			this->label18->AutoSize = true;
+			this->label18->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 10, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
+				static_cast<System::Byte>(0)));
+			this->label18->ForeColor = System::Drawing::Color::White;
+			this->label18->Location = System::Drawing::Point(7, 132);
+			this->label18->Margin = System::Windows::Forms::Padding(4, 0, 4, 0);
+			this->label18->Name = L"label18";
+			this->label18->Size = System::Drawing::Size(146, 25);
+			this->label18->TabIndex = 13;
+			this->label18->Text = L"Rotation Speed";
+			// 
+			// label19
+			// 
+			this->label19->AutoSize = true;
+			this->label19->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 10, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
+				static_cast<System::Byte>(0)));
+			this->label19->ForeColor = System::Drawing::Color::White;
+			this->label19->Location = System::Drawing::Point(4, 174);
+			this->label19->Margin = System::Windows::Forms::Padding(4, 0, 4, 0);
+			this->label19->Name = L"label19";
+			this->label19->Size = System::Drawing::Size(206, 25);
+			this->label19->TabIndex = 15;
+			this->label19->Text = L"Maximum Step Speed";
+			// 
+			// box_MaximumStepSpeed
+			// 
+			this->box_MaximumStepSpeed->Location = System::Drawing::Point(218, 178);
+			this->box_MaximumStepSpeed->Margin = System::Windows::Forms::Padding(4);
+			this->box_MaximumStepSpeed->Name = L"box_MaximumStepSpeed";
+			this->box_MaximumStepSpeed->Size = System::Drawing::Size(148, 32);
+			this->box_MaximumStepSpeed->TabIndex = 16;
+			// 
+			// label12
+			// 
+			this->label12->AutoSize = true;
+			this->label12->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 10, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
+				static_cast<System::Byte>(0)));
+			this->label12->ForeColor = System::Drawing::Color::White;
+			this->label12->Location = System::Drawing::Point(7, 89);
+			this->label12->Margin = System::Windows::Forms::Padding(4, 0, 4, 0);
+			this->label12->Name = L"label12";
+			this->label12->Size = System::Drawing::Size(51, 25);
+			this->label12->TabIndex = 3;
+			this->label12->Text = L"FPS";
+			// 
+			// MotorMoveFPS
+			// 
+			this->MotorMoveFPS->Location = System::Drawing::Point(218, 82);
+			this->MotorMoveFPS->Margin = System::Windows::Forms::Padding(4);
+			this->MotorMoveFPS->Name = L"MotorMoveFPS";
+			this->MotorMoveFPS->Size = System::Drawing::Size(148, 32);
+			this->MotorMoveFPS->TabIndex = 3;
 			// 
 			// Number_of_Frames_button
 			// 
 			this->Number_of_Frames_button->BackColor = System::Drawing::Color::DarkGreen;
 			this->Number_of_Frames_button->Font = (gcnew System::Drawing::Font(L"Arial", 10));
 			this->Number_of_Frames_button->ForeColor = System::Drawing::SystemColors::ButtonHighlight;
-			this->Number_of_Frames_button->Location = System::Drawing::Point(221, 323);
+			this->Number_of_Frames_button->Location = System::Drawing::Point(1044, 502);
 			this->Number_of_Frames_button->Name = L"Number_of_Frames_button";
 			this->Number_of_Frames_button->Size = System::Drawing::Size(148, 69);
 			this->Number_of_Frames_button->TabIndex = 7;
@@ -865,10 +931,10 @@ private: System::Windows::Forms::Button^ movemotor_3_button;
 			// 
 			// MotorMoveFrames
 			// 
-			this->MotorMoveFrames->Location = System::Drawing::Point(221, 272);
+			this->MotorMoveFrames->Location = System::Drawing::Point(851, 526);
 			this->MotorMoveFrames->Margin = System::Windows::Forms::Padding(4);
 			this->MotorMoveFrames->Name = L"MotorMoveFrames";
-			this->MotorMoveFrames->Size = System::Drawing::Size(148, 32);
+			this->MotorMoveFrames->Size = System::Drawing::Size(148, 28);
 			this->MotorMoveFrames->TabIndex = 6;
 			// 
 			// label13
@@ -877,97 +943,52 @@ private: System::Windows::Forms::Button^ movemotor_3_button;
 			this->label13->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 10, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
 			this->label13->ForeColor = System::Drawing::Color::White;
-			this->label13->Location = System::Drawing::Point(22, 272);
+			this->label13->Location = System::Drawing::Point(756, 489);
 			this->label13->Margin = System::Windows::Forms::Padding(4, 0, 4, 0);
 			this->label13->Name = L"label13";
 			this->label13->Size = System::Drawing::Size(178, 25);
 			this->label13->TabIndex = 5;
 			this->label13->Text = L"Number of  Frames";
 			// 
-			// FPS_button
-			// 
-			this->FPS_button->BackColor = System::Drawing::Color::DarkGreen;
-			this->FPS_button->Font = (gcnew System::Drawing::Font(L"Arial", 10));
-			this->FPS_button->ForeColor = System::Drawing::SystemColors::ButtonHighlight;
-			this->FPS_button->Location = System::Drawing::Point(221, 142);
-			this->FPS_button->Name = L"FPS_button";
-			this->FPS_button->Size = System::Drawing::Size(148, 44);
-			this->FPS_button->TabIndex = 4;
-			this->FPS_button->Text = L"Set FPS";
-			this->FPS_button->UseVisualStyleBackColor = false;
-			this->FPS_button->Click += gcnew System::EventHandler(this, &MyForm::FPS_button_Click);
-			// 
-			// MotorMoveFPS
-			// 
-			this->MotorMoveFPS->Location = System::Drawing::Point(221, 81);
-			this->MotorMoveFPS->Margin = System::Windows::Forms::Padding(4);
-			this->MotorMoveFPS->Name = L"MotorMoveFPS";
-			this->MotorMoveFPS->Size = System::Drawing::Size(148, 32);
-			this->MotorMoveFPS->TabIndex = 3;
-			// 
-			// label12
-			// 
-			this->label12->AutoSize = true;
-			this->label12->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 10, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
-				static_cast<System::Byte>(0)));
-			this->label12->ForeColor = System::Drawing::Color::White;
-			this->label12->Location = System::Drawing::Point(31, 81);
-			this->label12->Margin = System::Windows::Forms::Padding(4, 0, 4, 0);
-			this->label12->Name = L"label12";
-			this->label12->Size = System::Drawing::Size(51, 25);
-			this->label12->TabIndex = 3;
-			this->label12->Text = L"FPS";
-			// 
-			// MoveFPS_Btn
-			// 
-			this->MoveFPS_Btn->BackColor = System::Drawing::Color::DarkGreen;
-			this->MoveFPS_Btn->Font = (gcnew System::Drawing::Font(L"Arial", 10));
-			this->MoveFPS_Btn->ForeColor = System::Drawing::SystemColors::ButtonHighlight;
-			this->MoveFPS_Btn->Location = System::Drawing::Point(221, 439);
-			this->MoveFPS_Btn->Name = L"MoveFPS_Btn";
-			this->MoveFPS_Btn->Size = System::Drawing::Size(148, 44);
-			this->MoveFPS_Btn->TabIndex = 3;
-			this->MoveFPS_Btn->Text = L"Move Motor";
-			this->MoveFPS_Btn->UseVisualStyleBackColor = false;
-			this->MoveFPS_Btn->Click += gcnew System::EventHandler(this, &MyForm::MoveFPS_Btn_Click);
-			// 
 			// richTextBox1
 			// 
 			this->richTextBox1->Enabled = false;
-			this->richTextBox1->Location = System::Drawing::Point(227, 749);
+			this->richTextBox1->Location = System::Drawing::Point(1329, 580);
 			this->richTextBox1->Name = L"richTextBox1";
-			this->richTextBox1->Size = System::Drawing::Size(252, 87);
+			this->richTextBox1->Size = System::Drawing::Size(409, 168);
 			this->richTextBox1->TabIndex = 4;
 			this->richTextBox1->Text = L"";
 			// 
-			// ParameterButton
-			// 
-			this->ParameterButton->BackColor = System::Drawing::Color::DarkGreen;
-			this->ParameterButton->Font = (gcnew System::Drawing::Font(L"Arial", 10));
-			this->ParameterButton->ForeColor = System::Drawing::SystemColors::ButtonHighlight;
-			this->ParameterButton->Location = System::Drawing::Point(393, 173);
-			this->ParameterButton->Name = L"ParameterButton";
-			this->ParameterButton->Size = System::Drawing::Size(191, 44);
-			this->ParameterButton->TabIndex = 10;
-			this->ParameterButton->Text = L"Set Parameter ";
-			this->ParameterButton->UseVisualStyleBackColor = false;
-			this->ParameterButton->Click += gcnew System::EventHandler(this, &MyForm::ParameterButton_Click);
-			// 
 			// groupBox4
 			// 
+			this->groupBox4->Controls->Add(this->label20);
+			this->groupBox4->Controls->Add(this->MotorAccInp);
 			this->groupBox4->Controls->Add(this->box_Orthogonal_Distance);
-			this->groupBox4->Controls->Add(this->ParameterButton);
 			this->groupBox4->Controls->Add(this->label15);
 			this->groupBox4->Controls->Add(this->box_Pixel_Size);
+			this->groupBox4->Controls->Add(this->label5);
 			this->groupBox4->Controls->Add(this->label16);
+			this->groupBox4->Controls->Add(this->label17);
+			this->groupBox4->Controls->Add(this->box_Arm_Length);
 			this->groupBox4->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 11));
 			this->groupBox4->ForeColor = System::Drawing::Color::GreenYellow;
-			this->groupBox4->Location = System::Drawing::Point(738, 137);
+			this->groupBox4->Location = System::Drawing::Point(30, 421);
 			this->groupBox4->Name = L"groupBox4";
-			this->groupBox4->Size = System::Drawing::Size(613, 240);
+			this->groupBox4->Size = System::Drawing::Size(613, 304);
 			this->groupBox4->TabIndex = 8;
 			this->groupBox4->TabStop = false;
 			this->groupBox4->Text = L"Basic Parameter Setting";
+			// 
+			// label20
+			// 
+			this->label20->AutoSize = true;
+			this->label20->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 8));
+			this->label20->ForeColor = System::Drawing::Color::Ivory;
+			this->label20->Location = System::Drawing::Point(27, 30);
+			this->label20->Name = L"label20";
+			this->label20->Size = System::Drawing::Size(274, 20);
+			this->label20->TabIndex = 15;
+			this->label20->Text = L"Those parameters have default value.";
 			// 
 			// box_Orthogonal_Distance
 			// 
@@ -1011,107 +1032,26 @@ private: System::Windows::Forms::Button^ movemotor_3_button;
 			this->label16->TabIndex = 3;
 			this->label16->Text = L"Pixel Size";
 			// 
-			// box_MaximumStepSpeed
-			// 
-			this->box_MaximumStepSpeed->Location = System::Drawing::Point(248, 563);
-			this->box_MaximumStepSpeed->Margin = System::Windows::Forms::Padding(4);
-			this->box_MaximumStepSpeed->Name = L"box_MaximumStepSpeed";
-			this->box_MaximumStepSpeed->Size = System::Drawing::Size(148, 28);
-			this->box_MaximumStepSpeed->TabIndex = 16;
-			// 
-			// label19
-			// 
-			this->label19->AutoSize = true;
-			this->label19->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 10, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
-				static_cast<System::Byte>(0)));
-			this->label19->ForeColor = System::Drawing::Color::White;
-			this->label19->Location = System::Drawing::Point(22, 570);
-			this->label19->Margin = System::Windows::Forms::Padding(4, 0, 4, 0);
-			this->label19->Name = L"label19";
-			this->label19->Size = System::Drawing::Size(206, 25);
-			this->label19->TabIndex = 15;
-			this->label19->Text = L"Maximum Step Speed";
-			// 
-			// box_RotationSpeed
-			// 
-			this->box_RotationSpeed->Location = System::Drawing::Point(248, 513);
-			this->box_RotationSpeed->Margin = System::Windows::Forms::Padding(4);
-			this->box_RotationSpeed->Name = L"box_RotationSpeed";
-			this->box_RotationSpeed->Size = System::Drawing::Size(148, 28);
-			this->box_RotationSpeed->TabIndex = 14;
-			// 
-			// label18
-			// 
-			this->label18->AutoSize = true;
-			this->label18->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 10, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
-				static_cast<System::Byte>(0)));
-			this->label18->ForeColor = System::Drawing::Color::White;
-			this->label18->Location = System::Drawing::Point(22, 519);
-			this->label18->Margin = System::Windows::Forms::Padding(4, 0, 4, 0);
-			this->label18->Name = L"label18";
-			this->label18->Size = System::Drawing::Size(146, 25);
-			this->label18->TabIndex = 13;
-			this->label18->Text = L"Rotation Speed";
-			// 
-			// box_Arm_Length
-			// 
-			this->box_Arm_Length->Location = System::Drawing::Point(248, 460);
-			this->box_Arm_Length->Margin = System::Windows::Forms::Padding(4);
-			this->box_Arm_Length->Name = L"box_Arm_Length";
-			this->box_Arm_Length->Size = System::Drawing::Size(148, 28);
-			this->box_Arm_Length->TabIndex = 12;
-			// 
 			// label17
 			// 
 			this->label17->AutoSize = true;
 			this->label17->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 10, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
 			this->label17->ForeColor = System::Drawing::Color::White;
-			this->label17->Location = System::Drawing::Point(22, 460);
+			this->label17->Location = System::Drawing::Point(-5, 183);
 			this->label17->Margin = System::Windows::Forms::Padding(4, 0, 4, 0);
 			this->label17->Name = L"label17";
 			this->label17->Size = System::Drawing::Size(113, 25);
 			this->label17->TabIndex = 11;
 			this->label17->Text = L"Arm Length";
 			// 
-			// armlength_button
+			// box_Arm_Length
 			// 
-			this->armlength_button->BackColor = System::Drawing::Color::DarkGreen;
-			this->armlength_button->Font = (gcnew System::Drawing::Font(L"Arial", 10));
-			this->armlength_button->ForeColor = System::Drawing::SystemColors::ButtonHighlight;
-			this->armlength_button->Location = System::Drawing::Point(530, 448);
-			this->armlength_button->Name = L"armlength_button";
-			this->armlength_button->Size = System::Drawing::Size(173, 44);
-			this->armlength_button->TabIndex = 11;
-			this->armlength_button->Text = L"Set Arm Length";
-			this->armlength_button->UseVisualStyleBackColor = false;
-			this->armlength_button->Click += gcnew System::EventHandler(this, &MyForm::armlength_button_Click);
-			// 
-			// rotationspeed_button
-			// 
-			this->rotationspeed_button->BackColor = System::Drawing::Color::DarkGreen;
-			this->rotationspeed_button->Font = (gcnew System::Drawing::Font(L"Arial", 10));
-			this->rotationspeed_button->ForeColor = System::Drawing::SystemColors::ButtonHighlight;
-			this->rotationspeed_button->Location = System::Drawing::Point(530, 501);
-			this->rotationspeed_button->Name = L"rotationspeed_button";
-			this->rotationspeed_button->Size = System::Drawing::Size(191, 44);
-			this->rotationspeed_button->TabIndex = 17;
-			this->rotationspeed_button->Text = L"Set Rotation Speed";
-			this->rotationspeed_button->UseVisualStyleBackColor = false;
-			this->rotationspeed_button->Click += gcnew System::EventHandler(this, &MyForm::rotationspeed_button_Click);
-			// 
-			// stepspeed_button
-			// 
-			this->stepspeed_button->BackColor = System::Drawing::Color::DarkGreen;
-			this->stepspeed_button->Font = (gcnew System::Drawing::Font(L"Arial", 10));
-			this->stepspeed_button->ForeColor = System::Drawing::SystemColors::ButtonHighlight;
-			this->stepspeed_button->Location = System::Drawing::Point(530, 559);
-			this->stepspeed_button->Name = L"stepspeed_button";
-			this->stepspeed_button->Size = System::Drawing::Size(191, 44);
-			this->stepspeed_button->TabIndex = 18;
-			this->stepspeed_button->Text = L"Set Step Speed";
-			this->stepspeed_button->UseVisualStyleBackColor = false;
-			this->stepspeed_button->Click += gcnew System::EventHandler(this, &MyForm::stepspeed_button_Click);
+			this->box_Arm_Length->Location = System::Drawing::Point(221, 183);
+			this->box_Arm_Length->Margin = System::Windows::Forms::Padding(4);
+			this->box_Arm_Length->Name = L"box_Arm_Length";
+			this->box_Arm_Length->Size = System::Drawing::Size(148, 32);
+			this->box_Arm_Length->TabIndex = 12;
 			// 
 			// movemotor_3_button
 			// 
@@ -1119,7 +1059,7 @@ private: System::Windows::Forms::Button^ movemotor_3_button;
 			this->movemotor_3_button->Font = (gcnew System::Drawing::Font(L"Arial", 10, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
 			this->movemotor_3_button->ForeColor = System::Drawing::SystemColors::ButtonHighlight;
-			this->movemotor_3_button->Location = System::Drawing::Point(530, 625);
+			this->movemotor_3_button->Location = System::Drawing::Point(893, 839);
 			this->movemotor_3_button->Margin = System::Windows::Forms::Padding(4);
 			this->movemotor_3_button->Name = L"movemotor_3_button";
 			this->movemotor_3_button->Size = System::Drawing::Size(188, 44);
@@ -1128,25 +1068,74 @@ private: System::Windows::Forms::Button^ movemotor_3_button;
 			this->movemotor_3_button->UseVisualStyleBackColor = false;
 			this->movemotor_3_button->Click += gcnew System::EventHandler(this, &MyForm::movemotor_3_button_Click);
 			// 
+			// calculateall_button
+			// 
+			this->calculateall_button->BackColor = System::Drawing::Color::FromArgb(static_cast<System::Int32>(static_cast<System::Byte>(0)),
+				static_cast<System::Int32>(static_cast<System::Byte>(0)), static_cast<System::Int32>(static_cast<System::Byte>(192)));
+			this->calculateall_button->Font = (gcnew System::Drawing::Font(L"Arial", 15, static_cast<System::Drawing::FontStyle>((System::Drawing::FontStyle::Bold | System::Drawing::FontStyle::Italic)),
+				System::Drawing::GraphicsUnit::Point, static_cast<System::Byte>(0)));
+			this->calculateall_button->ForeColor = System::Drawing::SystemColors::ButtonHighlight;
+			this->calculateall_button->Location = System::Drawing::Point(847, 711);
+			this->calculateall_button->Margin = System::Windows::Forms::Padding(4);
+			this->calculateall_button->Name = L"calculateall_button";
+			this->calculateall_button->Size = System::Drawing::Size(302, 85);
+			this->calculateall_button->TabIndex = 3;
+			this->calculateall_button->Text = L"Calculate All";
+			this->calculateall_button->UseVisualStyleBackColor = false;
+			this->calculateall_button->Click += gcnew System::EventHandler(this, &MyForm::calculateall_button_Click);
+			// 
+			// label9
+			// 
+			this->label9->AutoSize = true;
+			this->label9->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 10, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
+				static_cast<System::Byte>(0)));
+			this->label9->ForeColor = System::Drawing::Color::OliveDrab;
+			this->label9->Location = System::Drawing::Point(222, 839);
+			this->label9->Margin = System::Windows::Forms::Padding(4, 0, 4, 0);
+			this->label9->Name = L"label9";
+			this->label9->Size = System::Drawing::Size(127, 25);
+			this->label9->TabIndex = 1;
+			this->label9->Text = L"Scan Degree";
+			// 
+			// label21
+			// 
+			this->label21->AutoSize = true;
+			this->label21->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 20));
+			this->label21->ForeColor = System::Drawing::Color::Red;
+			this->label21->Location = System::Drawing::Point(734, 38);
+			this->label21->Name = L"label21";
+			this->label21->Size = System::Drawing::Size(730, 46);
+			this->label21->TabIndex = 16;
+			this->label21->Text = L"ATTENTION: MUST TYPE IN NUMBER";
+			// 
+			// label24
+			// 
+			this->label24->AutoSize = true;
+			this->label24->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 8));
+			this->label24->ForeColor = System::Drawing::Color::Ivory;
+			this->label24->Location = System::Drawing::Point(727, 800);
+			this->label24->Name = L"label24";
+			this->label24->Size = System::Drawing::Size(617, 20);
+			this->label24->TabIndex = 16;
+			this->label24->Text = L"Set 2 among Speed Setting, Exposure Time, and Number of Frames to use this button"
+				L"";
+			// 
 			// MyForm
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(9, 18);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
 			this->BackColor = System::Drawing::SystemColors::WindowFrame;
 			this->ClientSize = System::Drawing::Size(1841, 924);
+			this->Controls->Add(this->label24);
+			this->Controls->Add(this->Number_of_Frames_button);
+			this->Controls->Add(this->label21);
+			this->Controls->Add(this->MotorMoveFrames);
+			this->Controls->Add(this->label13);
+			this->Controls->Add(this->calculateall_button);
 			this->Controls->Add(this->movemotor_3_button);
-			this->Controls->Add(this->stepspeed_button);
-			this->Controls->Add(this->rotationspeed_button);
-			this->Controls->Add(this->armlength_button);
-			this->Controls->Add(this->box_MaximumStepSpeed);
-			this->Controls->Add(this->label19);
 			this->Controls->Add(this->groupBox4);
-			this->Controls->Add(this->box_RotationSpeed);
-			this->Controls->Add(this->label18);
 			this->Controls->Add(this->richTextBox1);
-			this->Controls->Add(this->box_Arm_Length);
 			this->Controls->Add(this->groupBox3);
-			this->Controls->Add(this->label17);
 			this->Controls->Add(this->groupBox2);
 			this->Controls->Add(this->scanDegreeInp);
 			this->Controls->Add(this->groupBox1);
@@ -1221,8 +1210,8 @@ private: System::Windows::Forms::Button^ movemotor_3_button;
 				Motor_found_label->Text = motor_init.ToString();
 
 				// set default settings
-				res = ph_motor.setStepperSpeed(speed);
-				res = ph_motor.setStepperAcc(acc);
+				res = ph_motor.setStepperSpeed(stepspeed);
+				res = ph_motor.setStepperAcc(acceleration);
 
 				if (cam_init) {
 
@@ -1523,7 +1512,7 @@ private: System::Windows::Forms::Button^ movemotor_3_button;
 
 		void SetMotorAccBtnHandle() {
 
-			double acceleration = Convert::ToDouble(MotorAccInp->Text);
+			acceleration = Convert::ToDouble(MotorAccInp->Text);
 			ph_motor.setStepperAcc(acceleration);
 			//this->label_motoracceleration->Text = L"" + acceleration;
 		}
@@ -1537,42 +1526,31 @@ private: System::Windows::Forms::Button^ movemotor_3_button;
 			IDS_Cam.Save_Scan();
 
 		}
+		void Setup() {
+			this->box_Arm_Length->Text = L"" + arm_length;
+			this->box_Pixel_Size->Text = L"" + pixel_size;
+			this->box_RotationSpeed->Text = L"" + maximum_step_speed;
+			this->box_Orthogonal_Distance->Text = L"" + orthogonal_distance;	
+		}
 		/// <summary>
 		/// Zhaokang part
 		/// </summary>
-	private: System::Void MoveFPS_Btn_Click(System::Object^ sender, System::EventArgs^ e) {
-		double speed = FPS * pixel_size / orthogonal_distance / 2 / 3.1415926;//R=FPS*P/L/2pi
-		ph_motor.setStepperSpeed(speed);//set the speed
+	private: System::Void movemotor_3_button_Click(System::Object^ sender, System::EventArgs^ e) {
+		//double speed = FPS * pixel_size / orthogonal_distance / 2 / 3.1415926;//R=FPS*P/L/2pi
+		ph_motor.setStepperSpeed(stepspeed);//set the speed
 		double time = Number_of_Frames / FPS;//time=number of frames / FPS
-		double position = speed * time;//position = speed * time
+		double position = rotation_speed * time;//position = speed * time
 		double defPos = ph_motor.getPosition();//set the position
 		double res = ph_motor.moveTo(defPos + position);//set the position moving to
 		//ph_motor.setStepperAcc(0);//set the acceleration
 		///richTextBox1, only used in debug
-		this->richTextBox1->Text = L"Speed:" + speed + L"\n" + L"MovePosition:" + position + L"\n" + L"Time:" + time;
+		this->richTextBox1->Text = L"stepspeed:" + stepspeed + L"\n" + L"MovePosition:" + position + L"\n" + L"Time:" + time;
 	}
-	private: System::Void FPS_button_Click(System::Object^ sender, System::EventArgs^ e) {
-		FPS = Convert::ToDouble(MotorMoveFPS->Text);//FPS
-	}
+
 	private: System::Void Number_of_Frames_button_Click(System::Object^ sender, System::EventArgs^ e) {
 		Number_of_Frames = Convert::ToDouble(MotorMoveFrames->Text);//Number of Frames
 	}
-	private: System::Void IMG_Show_Click(System::Object^ sender, System::EventArgs^ e) {
-		//IplImage *img1 = cvLoadImage("pic1.png");
-		Mat image = imread("pic1.png");
-		namedWindow("test", WINDOW_AUTOSIZE);
-		//imshow("test", image );
-		waitKey(0);
-		destroyWindow("test");
-		//releaseImage(&image);
 
-		///this->pictureBox1->Image = image;
-		//System::Drawing::Bitmap^ MyImage;
-		//pictureBox1->SizeMode = PictureBoxSizeMode::StretchImage;
-		//MyImage = gcnew System::Drawing::Bitmap("pic1.png");
-		//pictureBox1->ClientSize = System::Drawing::Size(500, 500);
-		//pictureBox1->Image = dynamic_cast<System::Drawing::Image^>(MyImage);
-	}
 	private: System::Void groupBox1_Enter(System::Object^ sender, System::EventArgs^ e) {
 	}
 
@@ -1602,13 +1580,123 @@ private: System::Void rotationspeed_button_Click(System::Object^ sender, System:
 private: System::Void stepspeed_button_Click(System::Object^ sender, System::EventArgs^ e) {
 	maximum_step_speed = Convert::ToDouble(box_MaximumStepSpeed->Text);
 	rotation_speed = maximum_step_speed * pixel_size / 2 / 3.1415926 / arm_length;
-	this->box_RotationSpeed->Text = L"" + maximum_step_speed;
+	this->box_RotationSpeed->Text = L"" + rotation_speed;
 	//this->label_stepspeed->Text = L"" + maximum_step_speed;
 	//this->label_rorationspeed->Text = L"" + rotation_speed;
 }
-private: System::Void movemotor_3_button_Click(System::Object^ sender, System::EventArgs^ e) {
-	ph_motor.setStepperSpeed(maximum_step_speed);
-}
-};
+
+private: System::Void calculateall_button_Click(System::Object^ sender, System::EventArgs^ e) {
+
+	if (this->box_Arm_Length->Text == L"") {
+		this->richTextBox1->Text += L"Arm Length uses default value;\n";
+		this->box_Arm_Length->Text = L"" + arm_length;
+	}
+	else {
+		arm_length = Convert::ToDouble(box_Arm_Length->Text);
+	}
+	if(this->box_Pixel_Size->Text == L"") {
+		this->richTextBox1->Text += L"Pixel Size uses default value;\n";
+		this->box_Pixel_Size->Text = L"" + pixel_size;
+	}
+	else {
+		pixel_size = Convert::ToDouble(box_Pixel_Size->Text);
+	}
+	if (this->box_Orthogonal_Distance->Text == L"") {
+		this->richTextBox1->Text += L"Orthogonal Distance uses default value;\n";
+		this->box_Orthogonal_Distance->Text = L"" + orthogonal_distance;
+	}
+	else {
+		orthogonal_distance = Convert::ToDouble(box_Pixel_Size->Text);
+	}
+	if (this->MotorAccInp->Text == L"") {
+		this->richTextBox1->Text += L"Motor Acceleration uses default value;\n";
+		this->MotorAccInp->Text = L"" + acceleration;
+	}
+	else {
+		acceleration = Convert::ToDouble(MotorAccInp->Text);
+	}
 	
+	if ((this->MotorMoveFPS->Text == L"") && (this->box_MaximumStepSpeed->Text == L"")
+		&& (this->box_RotationSpeed->Text != L"")) {
+		parameter_speed = 0;
+	}
+	else {
+		parameter_speed = 1;
+		if (this->MotorMoveFPS->Text != L"") {
+			FPS = Convert::ToDouble(this->MotorMoveFPS->Text);
+			rotation_speed = FPS * pixel_size / orthogonal_distance / 2 / 3.1415926;
+			stepspeed = rotation_speed * pixel_size / 2 / 3.1415926 / arm_length;
+
+			this->box_MaximumStepSpeed->Text = L"" + stepspeed;
+			this->box_RotationSpeed->Text = L"" + rotation_speed;
+		}
+		else if (this->box_MaximumStepSpeed->Text != L"") {
+			speed = Convert::ToDouble(this->box_MaximumStepSpeed->Text);
+			FPS = speed / pixel_size * orthogonal_distance * 2 * 3.1415926;
+			rotation_speed = speed * pixel_size / 2 / 3.1415926 / arm_length;
+
+			this->MotorMoveFPS->Text = L"" + FPS;
+			this->box_RotationSpeed->Text = L"" + rotation_speed;
+		}
+		else if (this->box_RotationSpeed->Text != L"") {
+			rotation_speed = Convert::ToDouble(this->box_RotationSpeed->Text);
+			speed = rotation_speed / pixel_size * 2 * 3.1415926 * arm_length;
+			FPS = speed / pixel_size * orthogonal_distance * 2 * 3.1415926;
+
+			this->box_RotationSpeed->Text = L"" + rotation_speed;
+			this->MotorMoveFPS->Text = L"" + FPS;
+		}
+	}
+
+
+	if (this->ExposureTimeInp->Text == L"") {
+		parameter_time = 0;
+	}
+	else {
+		parameter_time = 1;
+		exposuretime = Convert::ToDouble(this->ExposureTimeInp->Text);
+	}
+
+
+	if (this->MotorMoveFrames->Text == L"") {
+		parameter_distance = 0;
+	}
+	else {
+		parameter_distance = 1;
+		Number_of_Frames= Convert::ToDouble(this->MotorMoveFrames->Text);
+	}
+
+
+	if (parameter_speed) {
+		if (parameter_distance && parameter_time) {
+			double time = Number_of_Frames / FPS;
+			if (exposuretime != time) {
+				this->richTextBox1->Text += L"Cannot get corract value!\n";
+				goto end;
+			}
+
+		}
+		else if (parameter_distance || parameter_time) {
+			if (parameter_distance) {
+				exposuretime = Number_of_Frames / FPS;
+			}
+			else {
+				Number_of_Frames = exposuretime * speed;
+			}
+		}
+		else {
+			this->richTextBox1->Text += L"Give Exposure Time or Number of Frames or Scan Degree;\n";
+		}
+
+	}
+
+
+	else if(parameter_speed && parameter_time) {
+		this->richTextBox1->Text += L"Give one among Rotation Speed, Maximum Step Speed and FPS;\n";
+	}
+	end:;
+}
+	  
+};
+
 }
