@@ -61,8 +61,7 @@ namespace UFCam {
 	double maximum_step_speed = 0.00000000;
 	double exposuretime = 0.00000000;
 	double scan_degree;
-	int par_ControlMode;
-	int switchmod;
+	int par_ControlMode=1;
 	//wchar_t motor1[] = L"Phidgets";
 	//double size_motor1 = size(motor1);
 	//wchar_t motor2[] = L"Zaber";
@@ -85,7 +84,27 @@ namespace UFCam {
 	/// <summary>
 	/// 
 	/// </summary>
+	public ref class Work
+	{
+	public:Work()
+	{
+	}
+		  void Print()
+		  {
+			  // obtain reference to currently executing thread
+			  Thread^ current = Thread::CurrentThread;
 
+			  // put thread to sleep for sleepTime amount of time
+			  std::string msg = " starting thread ";
+			  std::wstring stemp = std::wstring(msg.begin(), msg.end());
+			  LPCWSTR sw = stemp.c_str();
+			  OutputDebugString((LPCWSTR)sw);
+
+
+			  Thread::Sleep(5000);
+
+		  } // end method Print
+	};
 
 
 
@@ -1366,43 +1385,6 @@ private: System::Windows::Forms::Button^ button_ControlMode;
 			Cam_curr_gamma->Text = gamma.ToString();
 		}
 
-		void CheckArduino() {
-
-			//double val = 0;
-			//SerialPort arduino(port);
-			//if (arduino.isConnected()) {
-				  //cout << "connected";
-			//}
-			//else {
-				  //cout << "Error in port name" << endl << endl;
-			//}
-
-			//while (true) {
-
-				  ////arduino.readSerialPort(output, MAX_DATA_LENGTH);
-
-				  //string outPut = convertToString(output, 1);
-				  //if (outPut == "h" && prevState != outPut) {
-
-				  //	  time(&currentTime);                   // Get the current time
-				  //	  localTime = localtime(&currentTime);  // Convert the current time to the local time
-
-				  ///*	  int Min = localTime->tm_min;
-				  //	  int Sec = localTime->tm_sec;
-				  //	  tStampsMin.push_back(Min);
-				  //	  tStampsSec.push_back(Sec);*/
-				  //	  //qInfo() << QString::fromStdString(outPut);
-
-				  //	  std::this_thread::sleep_for(std::chrono::nanoseconds(1));
-				  //	  // then call the camera to capture
-				  //}
-
-				  //waitKey(20);
-				  //prevState = outPut;
-				  //	 
-			//}
-
-		};
 
 		std::string convertToString(char* a, int size)
 		{
@@ -1416,7 +1398,6 @@ private: System::Windows::Forms::Button^ button_ControlMode;
 
 
 		void ScanBtnHandle() {
-
 
 
 			// Start a thread that calls a parameterized instance method.
@@ -1584,6 +1565,7 @@ private: System::Windows::Forms::Button^ button_ControlMode;
 			stop_live_view = true;
 			IDS_Cam.CameraLive_Stop();
 			cv::destroyAllWindows();
+			IDS_Cam.OpenCamera();
 		}
 
 		void SetMotorSpeedBtnHandle() {
@@ -1624,6 +1606,12 @@ private: System::Windows::Forms::Button^ button_ControlMode;
 			this->MotorAccInp->Text = L"" + acceleration;
 			this->MotorMoveFPS->Text = L"" + FPS;
 			this->box_MaximumStepSpeed->Text = L"" + stepspeed;
+			if (par_ControlMode == 1) {//1£ºSortware Mode
+				this->Text_ControlMode->Text = L"Sortware Mode";
+			}
+			else {//2£ºHardware Mode
+				this->Text_ControlMode->Text = L"Hardware Mode";
+			}
 		}
 		/// <summary>
 		/// Zhaokang part
