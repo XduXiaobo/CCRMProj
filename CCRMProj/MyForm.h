@@ -61,6 +61,8 @@ namespace UFCam {
 	double maximum_step_speed = 0.00000000;
 	double exposuretime = 0.00000000;
 	double scan_degree;
+	int par_ControlMode;
+	int switchmod;
 	//wchar_t motor1[] = L"Phidgets";
 	//double size_motor1 = size(motor1);
 	//wchar_t motor2[] = L"Zaber";
@@ -220,6 +222,9 @@ private: System::Windows::Forms::Label^ label24;
 private: System::Windows::Forms::Button^ button_clear;
 private: System::Windows::Forms::Label^ label25;
 private: System::Windows::Forms::Button^ button1;
+private: System::Windows::Forms::Label^ Text_ControlMode;
+private: System::Windows::Forms::Label^ label26;
+private: System::Windows::Forms::Button^ button_ControlMode;
 
 
 
@@ -331,6 +336,9 @@ private: System::Windows::Forms::Button^ button1;
 			this->label24 = (gcnew System::Windows::Forms::Label());
 			this->button_clear = (gcnew System::Windows::Forms::Button());
 			this->label25 = (gcnew System::Windows::Forms::Label());
+			this->Text_ControlMode = (gcnew System::Windows::Forms::Label());
+			this->label26 = (gcnew System::Windows::Forms::Label());
+			this->button_ControlMode = (gcnew System::Windows::Forms::Button());
 			this->groupBox1->SuspendLayout();
 			this->groupBox2->SuspendLayout();
 			this->groupBox3->SuspendLayout();
@@ -599,11 +607,11 @@ private: System::Windows::Forms::Button^ button1;
 			this->groupBox2->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 11, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
 			this->groupBox2->ForeColor = System::Drawing::Color::GreenYellow;
-			this->groupBox2->Location = System::Drawing::Point(742, 87);
+			this->groupBox2->Location = System::Drawing::Point(742, 159);
 			this->groupBox2->Margin = System::Windows::Forms::Padding(4);
 			this->groupBox2->Name = L"groupBox2";
 			this->groupBox2->Padding = System::Windows::Forms::Padding(4);
-			this->groupBox2->Size = System::Drawing::Size(623, 361);
+			this->groupBox2->Size = System::Drawing::Size(623, 359);
 			this->groupBox2->TabIndex = 2;
 			this->groupBox2->TabStop = false;
 			this->groupBox2->Text = L"Camera Settings";
@@ -1117,7 +1125,7 @@ private: System::Windows::Forms::Button^ button1;
 			this->label21->AutoSize = true;
 			this->label21->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 20));
 			this->label21->ForeColor = System::Drawing::Color::Red;
-			this->label21->Location = System::Drawing::Point(734, 38);
+			this->label21->Location = System::Drawing::Point(734, 37);
 			this->label21->Name = L"label21";
 			this->label21->Size = System::Drawing::Size(730, 46);
 			this->label21->TabIndex = 16;
@@ -1161,12 +1169,56 @@ private: System::Windows::Forms::Button^ button1;
 			this->label25->TabIndex = 18;
 			this->label25->Text = L"Debug Information";
 			// 
+			// Text_ControlMode
+			// 
+			this->Text_ControlMode->AutoSize = true;
+			this->Text_ControlMode->BackColor = System::Drawing::Color::Transparent;
+			this->Text_ControlMode->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 11));
+			this->Text_ControlMode->ForeColor = System::Drawing::Color::GreenYellow;
+			this->Text_ControlMode->Location = System::Drawing::Point(964, 119);
+			this->Text_ControlMode->Margin = System::Windows::Forms::Padding(4, 0, 4, 0);
+			this->Text_ControlMode->Name = L"Text_ControlMode";
+			this->Text_ControlMode->Size = System::Drawing::Size(142, 26);
+			this->Text_ControlMode->TabIndex = 19;
+			this->Text_ControlMode->Text = L"Control Mode";
+			// 
+			// label26
+			// 
+			this->label26->AutoSize = true;
+			this->label26->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 10, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
+				static_cast<System::Byte>(0)));
+			this->label26->ForeColor = System::Drawing::Color::White;
+			this->label26->Location = System::Drawing::Point(749, 119);
+			this->label26->Margin = System::Windows::Forms::Padding(4, 0, 4, 0);
+			this->label26->Name = L"label26";
+			this->label26->Size = System::Drawing::Size(130, 25);
+			this->label26->TabIndex = 20;
+			this->label26->Text = L"Control Mode";
+			// 
+			// button_ControlMode
+			// 
+			this->button_ControlMode->BackColor = System::Drawing::Color::DarkGreen;
+			this->button_ControlMode->Font = (gcnew System::Drawing::Font(L"Arial", 10, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
+				static_cast<System::Byte>(0)));
+			this->button_ControlMode->ForeColor = System::Drawing::SystemColors::ButtonHighlight;
+			this->button_ControlMode->Location = System::Drawing::Point(1159, 108);
+			this->button_ControlMode->Margin = System::Windows::Forms::Padding(4);
+			this->button_ControlMode->Name = L"button_ControlMode";
+			this->button_ControlMode->Size = System::Drawing::Size(210, 47);
+			this->button_ControlMode->TabIndex = 21;
+			this->button_ControlMode->Text = L"Change Control Mode";
+			this->button_ControlMode->UseVisualStyleBackColor = false;
+			this->button_ControlMode->Click += gcnew System::EventHandler(this, &MyForm::button_ControlMode_Click);
+			// 
 			// MyForm
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(9, 18);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
 			this->BackColor = System::Drawing::SystemColors::WindowFrame;
 			this->ClientSize = System::Drawing::Size(1841, 924);
+			this->Controls->Add(this->Text_ControlMode);
+			this->Controls->Add(this->label26);
+			this->Controls->Add(this->button_ControlMode);
 			this->Controls->Add(this->label25);
 			this->Controls->Add(this->button_clear);
 			this->Controls->Add(this->label24);
@@ -1775,6 +1827,17 @@ private: System::Void button1_Click(System::Object^ sender, System::EventArgs^ e
 	rotation_speed = Convert::ToDouble(this->box_RotationSpeed->Text);
 	orthogonal_distance = Convert::ToDouble(this->box_Orthogonal_Distance->Text);
 }
+private: System::Void button_ControlMode_Click(System::Object^ sender, System::EventArgs^ e) {
+	if (par_ControlMode == 1) {//1£ºSortware Mode
+		this->Text_ControlMode->Text = L"Hardware Mode";
+		par_ControlMode = 2;
+	}
+	else {//2£ºHardware Mode
+		this->Text_ControlMode->Text = L"Software Mode";
+		par_ControlMode = 1;
+	}
+}
+
 };
 
 }

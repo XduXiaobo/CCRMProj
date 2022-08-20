@@ -74,4 +74,7 @@
       <Filter>Resource Files</Filter>
     </EmbeddedResource>
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\..\..\work.txt" />
+  </ItemGroup>
 </Project>
