@@ -5,7 +5,7 @@ VisualStudioVersion = 17.2.32616.157
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CCRMProj", "CCRMProj\CCRMProj.vcxproj", "{331D0E5F-BD7D-4EC5-8F35-196012111EC3}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "User_CCRMProj", "..\..\User_CCRMProj_v2.3\CCRMProj\CCRMProj\User_CCRMProj.vcxproj", "{19D10465-0005-4F86-A985-1C7AB41F468D}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "User_CCRMProj", "..\User_CCRMProj\CCRMProj\User_CCRMProj.vcxproj", "{19D10465-0005-4F86-A985-1C7AB41F468D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
