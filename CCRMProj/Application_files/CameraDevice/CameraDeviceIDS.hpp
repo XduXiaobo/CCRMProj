@@ -152,7 +152,7 @@ namespace UFCam
 
 
 		// calls--> InitCamera() calls --> is_InitCamera() which is a default function
-		bool OpenCamera(bool reinit = false)
+		bool OpenCamera(int par_ControlMode,bool reinit = false)
 		{
 
 
@@ -189,8 +189,12 @@ namespace UFCam
 					INT nRet = is_Gamma(m_hCam, IS_GAMMA_CMD_SET, (void*)&nGamma, sizeof(nGamma));
 
 					nRet = is_SetSubSampling(m_hCam, IS_SUBSAMPLING_DISABLE);
-
-					is_SetExternalTrigger(m_hCam, IS_SET_TRIGGER_SOFTWARE);
+					if (par_ControlMode == 1) {
+						is_SetExternalTrigger(m_hCam, IS_SET_TRIGGER_SOFTWARE);
+					}
+					else if (par_ControlMode == 2) {
+						is_SetExternalTrigger(m_hCam, IS_SET_TRIGGER_LO_HI);
+					}
 					// Set the flash to a high active pulse for each image in the trigger mode
 					UINT nMode = IO_FLASH_MODE_TRIGGER_HI_ACTIVE;
 					is_IO(m_hCam, IS_IO_CMD_FLASH_SET_MODE, (void*)&nMode, sizeof(nMode));
@@ -391,10 +395,10 @@ namespace UFCam
 
 		}
 
-		void setupMemSequence() {
+		void setupMemSequence(int par_ControlMode) {
 
 			if (m_hCam == 0)
-				OpenCamera();
+				OpenCamera(par_ControlMode);
 
 			//is_AllocImageMem(m_hCam, aread_of_inter_px, aread_of_inter_py, 8, &pMem, &memID);
 			is_AllocImageMem(m_hCam,
@@ -1048,12 +1052,12 @@ namespace UFCam
 		}
 
 		// detect mode
-		void set_frame_detect_mode()
+		void set_frame_detect_mode(int par_ControlMode)
 		{
 
 			// set very high frame rate
 			// start capturing at high frame rate
-			setupMemSequence();
+			setupMemSequence(par_ControlMode);
 			set_FrameRate(def_frameRate);
 
 			UINT nEnable = EXTENDED_PIXELCLOCK_RANGE_OFF;

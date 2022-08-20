@@ -1316,7 +1316,7 @@ private: System::Windows::Forms::Button^ button_ControlMode;
 				Camera_found_label->Text = "...";
 				Motor_found_label->Text = "...";
 
-				bool cam_init = IDS_Cam.OpenCamera();
+				bool cam_init = IDS_Cam.OpenCamera(par_ControlMode);
 				bool motor_init = ph_motor.Stepper_Initialise();
 
 				Camera_found_label->Text = cam_init.ToString();
@@ -1494,7 +1494,7 @@ private: System::Windows::Forms::Button^ button_ControlMode;
 			double curr_expo = IDS_Cam.get_ExposureTime();
 			double curr_frameRate = IDS_Cam.get_FrameRate();
 
-			IDS_Cam.set_frame_detect_mode();
+			IDS_Cam.set_frame_detect_mode(par_ControlMode);
 			//IDS_Cam.setupLUT("Live");
 			stop_live_view = false;
 			image_in_frame = false;
@@ -1554,7 +1554,7 @@ private: System::Windows::Forms::Button^ button_ControlMode;
 				IDS_Cam.set_GainBoost(false);
 			}
 
-			IDS_Cam.set_frame_detect_mode();
+			IDS_Cam.set_frame_detect_mode(par_ControlMode);
 
 			//IDS_Cam.threadProcImageQueue();
 			IDS_Cam.CaptureLive();
@@ -1565,7 +1565,7 @@ private: System::Windows::Forms::Button^ button_ControlMode;
 			stop_live_view = true;
 			IDS_Cam.CameraLive_Stop();
 			cv::destroyAllWindows();
-			IDS_Cam.OpenCamera();
+			IDS_Cam.OpenCamera(par_ControlMode);
 		}
 
 		void SetMotorSpeedBtnHandle() {
